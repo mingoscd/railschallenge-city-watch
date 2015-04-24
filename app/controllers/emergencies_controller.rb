@@ -9,20 +9,20 @@ class EmergenciesController < ApplicationController
       emergencies = Emergency.all
       emergencies.each do |emergency|
         served += 1 if emergency.served
-        response << JSON[emergency.to_json(only: DEFAULT_PARAM_FIELDS)]
+        response << emergency.as_json(only: DEFAULT_PARAM_FIELDS)
       end
     end
     served_emergencies = [served, Emergency.count]
-    render json: { emergencies: response, full_responses: served_emergencies }, status: 200
+    render json: { emergencies: response, full_responses: served_emergencies }, status: :ok
   end
 
   def show
     emergency = Emergency.find_by code: params[:id]
     if emergency.nil?
-      head 404
+      head :not_found
     else
-      json_emergency = emergency.to_json(only: DEFAULT_PARAM_FIELDS)
-      render json: { emergency: JSON[json_emergency] }
+      json_emergency = emergency.as_json(only: DEFAULT_PARAM_FIELDS)
+      render json: { emergency: json_emergency }
     end
   end
 
@@ -34,14 +34,14 @@ class EmergenciesController < ApplicationController
     emergency = new_emergency
     if emergency.save
       emergency.send_responders
-      json_response = JSON[emergency.to_json(only: DEFAULT_PARAM_FIELDS, methods: [:responders, :full_response])]
-      render json: { emergency: json_response }, status: 201
+      json_response = emergency.as_json(only: DEFAULT_PARAM_FIELDS, methods: [:responders, :full_response])
+      render json: { emergency: json_response }, status: :created
     else
-      json_response = JSON[emergency.errors.to_json]
-      render json: { message: json_response }, status: 422
+      json_response = emergency.errors.as_json
+      render json: { message: json_response }, status: :unprocessable_entity
     end
   rescue ActionController::UnpermittedParameters => err
-    render json: { message: err.to_s }, status: 422
+    render json: { message: err.to_s }, status: :unprocessable_entity
   end
 
   def edit
@@ -53,11 +53,11 @@ class EmergenciesController < ApplicationController
     Emergency.responders_back(params)
 
     if emergency.update_attributes emergency_update_params
-      json_response = JSON[emergency.to_json(only: UPDATE_FIELDS)]
+      json_response = emergency.as_json(only: UPDATE_FIELDS)
       render json: { emergency: json_response }
     end
   rescue ActionController::UnpermittedParameters => err
-    render json: { message: err.to_s }, status: 422
+    render json: { message: err.to_s }, status: :unprocessable_entity
   end
 
   def destroy

@@ -20,10 +20,10 @@ class Emergency < ActiveRecord::Base
     responders.map do |responder|
       return [responder[:name]] if responder[:capacity] == severity
     end
-    get_responders_list(severity, responders)
+    responders_list(severity, responders)
   end
 
-  def get_responders_list(severity, responders)
+  def responders_list(severity, responders)
     result, capacity = [], 0
 
     responders.map do |responder|

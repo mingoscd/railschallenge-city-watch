@@ -3,6 +3,6 @@ class ApplicationController < ActionController::Base
   skip_before_action :verify_authenticity_token
 
   def not_found
-    render json: { message: 'page not found' }, status: 404
+    render json: { message: 'page not found' }, status: :not_found
   end
 end

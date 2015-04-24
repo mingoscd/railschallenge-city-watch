@@ -5,16 +5,10 @@ class RespondersController < ApplicationController
   def index
     if params[:show] == 'capacity'
       capacity = Responder.capacity_statistics
-      render json: { capacity: capacity }, status: 200
+      render json: { capacity: capacity }, status: :ok
     else
-      json_response = []
-      if Responder.count > 0
-        responders = Responder.all
-        responders.each do |responder|
-          json_response << JSON[responder.to_json(only: RESPONSE_FIELDS)]
-        end
-      end
-      render json: { responders: json_response }, status: 200
+      json_responders = Responder.all.as_json(only: RESPONSE_FIELDS)
+      render json: { responders: json_responders }, status: :ok
     end
   end
 
@@ -23,7 +17,7 @@ class RespondersController < ApplicationController
     if responder.nil?
       head 404
     else
-      json_responder = JSON[responder.to_json(only: RESPONSE_FIELDS)]
+      json_responder = responder.as_json(only: RESPONSE_FIELDS)
       render json: { responder: json_responder }
     end
   end
@@ -35,14 +29,14 @@ class RespondersController < ApplicationController
   def create
     responder = Responder.new responder_params
     if responder.save
-      json_response = JSON[responder.to_json(only: RESPONSE_FIELDS)]
-      render json: { responder: json_response }, status: 201
+      json_response = responder.as_json(only: RESPONSE_FIELDS)
+      render json: { responder: json_response }, status: :created
     else
-      json_response = JSON[responder.errors.to_json]
-      render json: { message: json_response }, status: 422
+      json_response = responder.errors.as_json
+      render json: { message: json_response }, status: :unprocessable_entity
     end
   rescue ActionController::UnpermittedParameters => err
-    render json: { message: err.to_s }, status: 422
+    render json: { message: err.to_s }, status: :unprocessable_entity
   end
 
   def edit
@@ -52,11 +46,11 @@ class RespondersController < ApplicationController
   def update
     responder = Responder.find_by name: params[:id]
     if responder.update_attributes responder_update_params
-      json_responder = JSON[responder.to_json(only: RESPONSE_FIELDS)]
+      json_responder = responder.as_json(only: RESPONSE_FIELDS)
       render json: { responder: json_responder }
     end
   rescue ActionController::UnpermittedParameters => err
-    render json: { message: err.to_s }, status: 422
+    render json: { message: err.to_s }, status: :unprocessable_entity
   end
 
   def destroy
