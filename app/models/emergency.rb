@@ -10,7 +10,7 @@ class Emergency < ActiveRecord::Base
     police = choose_responders(police_severity, responders[:police])
     medical = choose_responders(medical_severity, responders[:medical])
     @responders = fire + police + medical
-    self.served = @full_response_value
+    self.full_response = @full_response_value
   end
 
   def choose_responders(severity, responders)
@@ -40,7 +40,7 @@ class Emergency < ActiveRecord::Base
   end
 
   def full_response
-    served
+    self[:full_response]
   end
 
   def send_responders

@@ -4,16 +4,16 @@ class EmergenciesController < ApplicationController
   UPDATE_FIELDS = :code, :fire_severity, :police_severity, :medical_severity, :resolved_at
 
   def index
-    response, served = [], 0
+    response, full_response = [], 0
     if Emergency.count > 0
       emergencies = Emergency.all
       emergencies.each do |emergency|
-        served += 1 if emergency.served
+        full_response += 1 if emergency.full_response
         response << emergency.as_json(only: DEFAULT_PARAM_FIELDS)
       end
     end
-    served_emergencies = [served, Emergency.count]
-    render json: { emergencies: response, full_responses: served_emergencies }, status: :ok
+    full_response_emergencies = [full_response, Emergency.count]
+    render json: { emergencies: response, full_responses: full_response_emergencies }, status: :ok
   end
 
   def show
