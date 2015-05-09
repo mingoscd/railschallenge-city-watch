@@ -1,3 +1,4 @@
+
 require 'test_helper'
 
 class Emergencies404Test < ActionDispatch::IntegrationTest

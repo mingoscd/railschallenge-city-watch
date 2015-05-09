@@ -1,69 +1,46 @@
 class RespondersController < ApplicationController
-  REQUEST_FIELDS = :type, :name, :capacity
-  RESPONSE_FIELDS = :type, :name, :capacity, :emergency_code, :on_duty
+  before_action :set_responder, only: [:show, :update]
 
   def index
     if params[:show] == 'capacity'
-      capacity = Responder.capacity_statistics
-      render json: { capacity: capacity }, status: :ok
+      render json: { capacity: Responder.capacity_statistics }
     else
-      json_responders = Responder.all.as_json(only: RESPONSE_FIELDS)
-      render json: { responders: json_responders }, status: :ok
+      render json: Responder.all, root: 'responders'
     end
   end
 
   def show
-    responder = Responder.find_by name: params[:id]
-    if responder.nil?
-      head 404
+    if @responder
+      render json: @responder
     else
-      json_responder = responder.as_json(only: RESPONSE_FIELDS)
-      render json: { responder: json_responder }
+      fail ActiveRecord::RecordNotFound
     end
-  end
-
-  def new
-    not_found
   end
 
   def create
-    responder = Responder.new responder_params
-    if responder.save
-      json_response = responder.as_json(only: RESPONSE_FIELDS)
-      render json: { responder: json_response }, status: :created
+    @responder = Responder.new responder_params
+    if @responder.save
+      render json: @responder, root: 'responder', status: :created
     else
-      json_response = responder.errors.as_json
-      render json: { message: json_response }, status: :unprocessable_entity
+      render json: { message: @responder.errors }, status: :unprocessable_entity
     end
-  rescue ActionController::UnpermittedParameters => err
-    render json: { message: err.to_s }, status: :unprocessable_entity
   end
 
-  def edit
-    not_found
-  end
-
-  def update
-    responder = Responder.find_by name: params[:id]
-    if responder.update_attributes responder_update_params
-      json_responder = responder.as_json(only: RESPONSE_FIELDS)
-      render json: { responder: json_responder }
-    end
-  rescue ActionController::UnpermittedParameters => err
-    render json: { message: err.to_s }, status: :unprocessable_entity
-  end
-
-  def destroy
-    not_found
+  def update 
+    render json: @responder if @responder.update_attributes responder_update_params
   end
 
   private
 
   def responder_params
-    params.require(:responder).permit(REQUEST_FIELDS)
+    params.require(:responder).permit(:type, :name, :capacity)
   end
 
   def responder_update_params
     params.require(:responder).permit(:on_duty)
+  end
+
+  def set_responder
+    @responder ||= Responder.find_by_name params[:id]
   end
 end
