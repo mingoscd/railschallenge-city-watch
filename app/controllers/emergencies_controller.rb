@@ -1,10 +1,6 @@
 class EmergenciesController < ApplicationController
   before_action :set_emergency, only: [:show, :update]
 
-  DEFAULT_PARAM_FIELDS = :code, :fire_severity, :police_severity, :medical_severity
-  UPDATE_PARAM_FIELDS = :fire_severity, :police_severity, :medical_severity, :resolved_at
-  UPDATE_FIELDS = :code, :fire_severity, :police_severity, :medical_severity, :resolved_at
-
   def index
     response, full_response = [], 0
     if Emergency.count > 0
@@ -30,7 +26,7 @@ class EmergenciesController < ApplicationController
     emergency = new_emergency
     if emergency.save
       emergency.send_responders
-      json_response = emergency.as_json(only: DEFAULT_PARAM_FIELDS, methods: [:responders, :full_response])
+      json_response = emergency.as_json(methods: [:responders, :full_response])
       render json: { emergency: json_response }, status: :created
     else
       render json: { message: emergency.errors }, status: :unprocessable_entity
@@ -52,11 +48,11 @@ class EmergenciesController < ApplicationController
   private
 
   def emergency_params
-    params.require(:emergency).permit(DEFAULT_PARAM_FIELDS)
+    params.require(:emergency).permit(:code, :fire_severity, :police_severity, :medical_severity)
   end
 
   def emergency_update_params
-    params.require(:emergency).permit(UPDATE_PARAM_FIELDS)
+    params.require(:emergency).permit(:fire_severity, :police_severity, :medical_severity, :resolved_at)
   end
 
   def set_emergency
