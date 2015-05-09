@@ -26,7 +26,7 @@ class RespondersController < ApplicationController
     end
   end
 
-  def update 
+  def update
     render json: @responder if @responder.update_attributes responder_update_params
   end
 

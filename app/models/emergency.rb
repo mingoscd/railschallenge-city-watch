@@ -1,7 +1,12 @@
 class Emergency < ActiveRecord::Base
-  validates :code, presence: true, uniqueness: true
-  validates :fire_severity, :police_severity, :medical_severity, presence: true,
-                                                                 numericality: { greater_than_or_equal_to: 0 }
+  validates :code,             presence: true,
+                               uniqueness: true
+  validates :fire_severity,    presence: true,
+                               numericality: { greater_than_or_equal_to: 0 }
+  validates :police_severity,  presence: true,
+                               numericality: { greater_than_or_equal_to: 0 }
+  validates :medical_severity, presence: true,
+                               numericality: { greater_than_or_equal_to: 0 }
 
   attr_accessor :responders
 
@@ -43,9 +48,13 @@ class Emergency < ActiveRecord::Base
     self[:full_response]
   end
 
+  def self.full_response_metrics
+    [where(full_response: true).count, all.count]
+  end
+
   def send_responders
     @responders.each do |responder|
-      Responder.find_by(name: responder).update_attribute(:assigned, self[:code])
+      Responder.find_by_name(responder).update_attribute(:assigned, self[:code])
     end
   end
 
